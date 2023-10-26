@@ -1,17 +1,12 @@
 // 三目並べのページビュー
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_tic_tac_toe/provider/tic_tac_toe_provider.dart';
 
 import '../model/tic_tac_toe.dart';
 
-class Board extends StatefulWidget {
-  const Board({super.key});
-
-  @override
-  State<Board> createState() => _BoardState();
-}
-
-class _BoardState extends State<Board> {
-  TicTacToe ticTacToe = TicTacToe.start(playerX: 'Dash', playerO: 'Sparky');
+class Board extends ConsumerWidget {
+  //TicTacToe ticTacToe = TicTacToe.start(playerX: 'Dash', playerO: 'Sparky');
 
   String _statusMessage(TicTacToe ticTacToe) {
     //三目並べ盤面状況から、勝利者を判定
@@ -31,7 +26,8 @@ class _BoardState extends State<Board> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ticTacToe = ref.watch(ticTacToeProvider);
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -58,12 +54,12 @@ class _BoardState extends State<Board> {
                 final mark = ticTacToe.board[row][col];
                 return GestureDetector(
                   onTap: () {
-                    setState(() {
-                      final winner = ticTacToe.getWinner();
-                      if (mark.isEmpty && winner.isEmpty) {
-                        ticTacToe = ticTacToe.placeMark(row, col);
-                      }
-                    });
+                    final winner = ticTacToe.getWinner();
+                    if (mark.isEmpty && winner.isEmpty) {
+                      //ref.read(ticTacToeProvider.notifier).stateでproviderの状態にアクセス
+                      ref.read(ticTacToeProvider.notifier).state =
+                          ticTacToe.placeMark(row, col);
+                    }
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -85,9 +81,8 @@ class _BoardState extends State<Board> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                setState(() {
-                  ticTacToe = ticTacToe.resetBoard();
-                });
+                ref.read(ticTacToeProvider.notifier).state =
+                    ticTacToe.resetBoard();
               },
               child: const Text('ゲームをリセット'),
             ),
