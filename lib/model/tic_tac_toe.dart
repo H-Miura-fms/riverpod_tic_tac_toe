@@ -26,6 +26,38 @@ class TicTacToe {
     ], players, players.playerX);
   }
 
+  // firestore通信(受け取る)
+  factory TicTacToe.fromJson(Map<String, dynamic> json) {
+    final flatBoard = List<String>.from(json['board']);
+
+    return TicTacToe(
+      // Firestore側を1次元配列にしているので、モデルの2次元配列とここで合わせる
+      [
+        List<String>.from(flatBoard.sublist(0, 3)),
+        List<String>.from(flatBoard.sublist(3, 6)),
+        List<String>.from(flatBoard.sublist(6, 9)),
+      ],
+      Players(
+        playerX: json['players']['playerX'],
+        playerO: json['players']['playerO'],
+      ),
+      json['currentPlayer'],
+    );
+  }
+
+  // firestore通信(送る)
+  Map<String, dynamic> toJson() {
+    return {
+      // モデルが2次元配列なので、Firestore側の1次元配列にここで合わせる
+      'board': [...board[0], ...board[1], ...board[2]],
+      'players': {
+        'playerX': players.playerX,
+        'playerO': players.playerO,
+      },
+      'currentPlayer': currentPlayer,
+    };
+  }
+
   // マス目にマークを配置
   TicTacToe placeMark(int row, int col) {
     //マス目が空欄である場合
